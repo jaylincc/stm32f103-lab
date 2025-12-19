@@ -1,0 +1,82 @@
+# ============================================================
+# Clang-Tidy 配置文件
+# C 语言适用
+# 根据需要启用/禁用特定检查
+# ============================================================
+
+Checks: >
+  # -* 先禁用所有检查，再逐个启用需要的检查
+  -*,
+  # 禁用所有编译器相关的诊断信息（包括编译错误、警告等）
+  -clang-diagnostic-*,
+  # Clang 静态分析器核心检查（越界、空指针、未初始化等基础问题）
+  clang-analyzer-core.*,
+  
+  # 已禁用: C 语言项目中显式类型转换是常见且推荐的做法
+  # google-readability-casting,
+  # 建议 if/for/while 都使用大括号，避免“悬挂 else”
+  readability-braces-around-statements,
+  # 启用命名风格检查（函数、变量、宏等命名格式）
+  readability-identifier-naming.*,
+  # 检查头文件多重包含，避免重复包含
+  readability-duplicate-include,
+  # 检查参数若未修改，应加 const,提高可读性与安全性()
+  # readability-non-const-parameter,
+  # 检查隐式 bool 转换（如 if(x)），提高代码可读性
+  readability-implicit-bool-conversion,
+
+  
+  # 检查宏中的参数是否缺少括号，例如 #define A(x) x+1
+  bugprone-macro-parentheses,
+  # 检查宏参数是否会重复求值导致副作用，例如 f(i++)
+  bugprone-macro-repeated-side-effects,
+  # 检查隐式 bool 转换（如 if(ptr)），常见于 C 语言的误用
+  bugprone-bool-pointer-implicit-conversion,
+  # 检查可能导致数据扩展顺序错误的强制类型转换
+  bugprone-misplaced-widening-cast,
+  # 检查 memset 用法是否合理，避免潜在错误
+  bugprone-suspicious-memset-usage,
+
+  # 检查未使用的函数参数（可用于清理冗余接口）
+  misc-unused-parameters,
+  # 检查冗余表达式，例如 x + 0 或 y * 1
+  misc-redundant-expression
+
+WarningsAsErrors: ""
+HeaderFilterRegex: ""
+
+# ============================================================
+# 详细规则选项（带中文注释）
+# ============================================================
+CheckOptions:
+  # ----- 命名风格（适配 C 项目） -----
+  - key: readability-braces-around-statements.ShortStatementLines
+    value: "1" # Readability: 大括号检查，强制 if(x) return; 改为 if(x){ return; }
+  - key: readability-identifier-naming.FunctionCase
+    value: lower_case # 函数使用 lower_case（如 dp_init, osc_read）
+  - key: readability-identifier-naming.VariableCase
+    value: lower_case  # 局部变量 lower_case（如 us_index, uc_flag）
+  - key: readability-identifier-naming.GlobalVariableCase
+    value: lower_case  # 全局变量 lower_case，适合嵌入式
+  - key: readability-identifier-naming.MacroDefinitionCase
+    value: UPPER_CASE  # 宏使用大写（如 BUFFER_SIZE）
+  - key: readability-non-const-parameter
+    value: "true"  # 未被修改的函数参数建议加 const
+
+  # ----- Google 风格：类型转换规则 -----
+  - key: google-readability-casting
+    value: "true"  # 防止不必要或危险的强制类型转换
+
+  # ----- Bugprone: 常见 C 陷阱检查 -----
+  - key: bugprone-macro-parentheses
+    value: "true"  # 强制宏参数加括号，减少优先级错误
+  - key: bugprone-macro-repeated-side-effects
+    value: "true"   # 检查 A(i++) 这种会多次自增的问题
+  - key: bugprone-bool-pointer-implicit-conversion
+    value: "true"  # 检查 if(ptr) 这类可能隐藏逻辑错误的写法
+  - key: bugprone-misplaced-widening-cast
+    value: "true"   # 防止整数扩展方向错误
+
+  # 杂项（Miscellaneous）
+  - key: misc-unused-parameters
+    value: "true"   # 提醒清理未使用的参数，减少冗余代码
